@@ -3,23 +3,9 @@
 Train an Ultralytics YOLO11-based hand detector in Python.
 
 ## Dataset options
+TODO: Reference dataset from: https://www.kaggle.com/datasets/nomihsa965/hand-detection-dataset-vocyolo-format?resource=download
 
-You have two good paths:
-
-1) Use an existing hand dataset (fastest):
-	- EgoHands (bounding boxes for hands in egocentric videos)
-	- Oxford Hand Detection Dataset (HOF/TV hand annotations)
-	- COCO-Hands or OpenImages hands subsets (community-curated)
-	- Sign Language datasets with hand boxes (e.g., LSA64 variants)
-
-	You’ll likely need to convert annotations to YOLO format (txt per image). See Conversion below.
-
-2) Create your own (best domain match):
-	- Collect images of target scenarios; aim for 1–5k images to start.
-	- Label with CVAT, Label Studio, Roboflow, or makesense.ai. Export in YOLOv5/YOLO format.
-	- Keep a single class called `hand`.
-
-Recommended: start with a public dataset to get a baseline, then fine-tune with your own data.
+TODO: Fix project structure below 
 
 ## Repository layout
 
@@ -44,10 +30,10 @@ Each image must have a same-named `*.txt` label file in `labels/...` with YOLO f
 
 ## Environment setup
 
-Python 3.9–3.11 recommended.
+Python 3.9–3.11 recommended. I used Python3.11
 
 ```
-python -m venv .millhand-venv
+python3.x -m venv .millhand-venv
 source .millhand-venv/bin/activate
 pip install --upgrade pip
 pip install ultralytics
