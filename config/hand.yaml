@@ -1,0 +1,16 @@
+# Ultralytics YOLO dataset config for single-class Hand detection (YOLO11)
+# Docs: https://docs.ultralytics.com/datasets/detect/
+
+# Root of the dataset (use absolute to avoid settings 'datasets_dir' interference)
+path: /home/michael-millard/Personal/MillHandDetector/data
+
+# Image directories (match current dataset layout under ./data)
+train: train/images
+val: val/images
+
+# Optional test split (kept same as val for now; update if you create a separate val)
+test: test/images
+
+# Class names (single class: hand)
+names: [hand]
+

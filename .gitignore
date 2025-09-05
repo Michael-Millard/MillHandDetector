@@ -1,0 +1,7 @@
+build/
+data/
+runs/
+test_images/
+.millhand-venv/
+*.pt
+*.onnx
