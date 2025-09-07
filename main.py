@@ -2,10 +2,10 @@
 Minimal Ultralytics YOLO (YOLO11) training entrypoint for hand detection.
 
 Usage (after installing requirements):
-  python main.py --train --epochs 50 --img 640 --batch 16
-  python main.py --val
-  python main.py --predict path/to/test/image/or/video --model build/yolov11-hand3/weights/best.pt --img 640
-  python main.py --export --img 640 --opset 12
+	python main.py --train --epochs 50 --img 640 --batch 16
+	python main.py --val
+	python main.py --predict path/to/test/image/or/video --model build/yolo11-hand/weights/best.pt --img 640
+	python main.py --export --img 640 --opset 12
 
 Expects dataset layout under ./data as per config/hand.yaml.
 My dataset was obtained from: https://www.kaggle.com/datasets/nomihsa965/hand-detection-dataset-vocyolo-format?resource=download

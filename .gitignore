@@ -5,3 +5,13 @@ test_images/
 .millhand-venv/
 *.pt
 *.onnx
+src/__pycache__/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+*.swo
+*.log
+*.bak
+*.tmp
