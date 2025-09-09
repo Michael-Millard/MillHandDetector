@@ -3,9 +3,9 @@
 Train an Ultralytics YOLO11-based hand detector in Python. Trained locally on my RTX4060. I used the nano and small YOLO models. The ONNX exports are used later in my C++ hand detection application. See: https://github.com/Michael-Millard/HandDetectorCPP
 
 <div style="display: flex; gap: 10px;">
-	<img src="media/test1.jpg" alt="Test Image 1" width="220"/>
-	<img src="media/test2.jpg" alt="Test Image 2" width="220"/>
-	<img src="media/test3.jpg" alt="Test Image 3" width="220"/>
+	<img src="media/test1.jpg" alt="Test Image 1" width="260"/>
+	<img src="media/test2.jpg" alt="Test Image 2" width="260"/>
+	<img src="media/test3.jpg" alt="Test Image 3" width="260"/>
 </div>
 
 ## Dataset
