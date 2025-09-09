@@ -2,7 +2,7 @@
 Minimal Ultralytics YOLO (YOLO11) training entrypoint for hand detection.
 
 Usage (after installing requirements):
-	python main.py --train --epochs 50 --img 640 --batch 16
+	python main.py --train --epochs 100 --img 640 --batch 16
 	python main.py --val
 	python main.py --predict path/to/test/image/or/video --model build/yolo11-hand/weights/best.pt --img 640
 	python main.py --export --img 640 --opset 12
@@ -24,16 +24,17 @@ def parse_args() -> argparse.Namespace:
 	m.add_argument("--predict", type=str, metavar="SOURCE", help="Run prediction on an image/video/dir")
 	m.add_argument("--export", action="store_true", help="Export weights to ONNX for OpenCV DNN")
 
-	p.add_argument("--model", type=str, default="yolo11n.pt", help="Base model or checkpoint path")
+	p.add_argument("--model", type=str, default="yolo_models/yolo11s.pt", help="Base model or checkpoint path (default: yolo_models/yolo11s.pt)")
 	p.add_argument("--data", type=str, default="config/hand.yaml", help="Dataset YAML path")
-	p.add_argument("--epochs", type=int, default=50)
+	p.add_argument("--epochs", type=int, default=100, help="Number of training epochs (default: 100)")
 	p.add_argument("--img", type=int, default=640, help="Image size")
-	p.add_argument("--batch", type=int, default=16)
-	p.add_argument("--device", type=str, default="", help="CUDA device e.g. '0' or '0,1' or 'cpu'")
-	p.add_argument("--project", type=str, default="build", help="Project output directory")
-	p.add_argument("--name", type=str, default="yolo11-hand", help="Run name under project")
-	p.add_argument("--workers", type=int, default=8)
+	p.add_argument("--batch", type=int, default=16, help="Batch size (default: 16)")
+	p.add_argument("--device", type=str, default="0", help="CUDA device e.g. '0' or '0,1' or 'cpu'")
+	p.add_argument("--project", type=str, default="output", help="Project output directory (default: output)")
+	p.add_argument("--name", type=str, default="yolo11_hand", help="Output directory (default: yolo11_hand)")
+	p.add_argument("--workers", type=int, default=8, help="Number of data loading workers (default: 8)")
 	p.add_argument("--exist-ok", action="store_true", help="Overwrite existing run dir")
+
 	# Export-specific args
 	p.add_argument("--opset", type=int, default=12, help="ONNX opset for export (12/13 recommended)")
 	p.add_argument("--dynamic", action="store_true", help="Use dynamic input shapes (static is safest for OpenCV)")
@@ -61,7 +62,9 @@ def main() -> None:
 			"Ultralytics YOLO not installed. Install with: pip install ultralytics"
 		) from e
 
-	model = YOLO(args.model)
+	model_path_abs = Path(args.model).absolute()
+	print(f"Using model: {model_path_abs}")
+	model = YOLO(model_path_abs)
 
 	if args.train:
 		model.train(

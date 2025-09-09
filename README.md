@@ -2,35 +2,34 @@
 
 Train an Ultralytics YOLO11-based hand detector in Python.
 
-## Dataset options
-TODO: Reference dataset from: https://www.kaggle.com/datasets/nomihsa965/hand-detection-dataset-vocyolo-format?resource=download
+## Dataset
 
-TODO: Fix project structure below 
+This project uses the "Hand Detection Dataset (VOC/YOLO Format)" by Nouman Ahsan, available on Kaggle: [Hand Detection Dataset](https://www.kaggle.com/datasets/nomihsa965/hand-detection-dataset-vocyolo-format?resource=download). The dataset contains labeled images for training and validation in YOLO format.
 
-## Repository layout
+## Repository Layout
 
 ```
 .
 ├── main.py                   # train/val/predict entrypoint
-├── yolo11n.pt                # base model
+├── yolo_models/             # directory for YOLO models (e.g., yolo11n.pt, yolo11s.pt)
 ├── config/
 │   └── hand.yaml             # dataset config (points to ./data)
 └── data/
-	 ├── images/
-	 │   ├── train/
-	 │   └── val/
-	 └── labels/
-		  ├── train/
-		  └── val/
+     ├── images/
+     │   ├── train/
+     │   └── val/
+     └── labels/
+          ├── train/
+          └── val/
 ```
 
 Each image must have a same-named `*.txt` label file in `labels/...` with YOLO format lines:
 
-`class_id cx cy w h` in normalized [0,1], where class_id is `0` for `hand`.
+`class_id cx cy w h` in normalized [0,1], where `class_id` is `0` for `hand`.
 
-## Environment setup
+## Environment Setup
 
-Python 3.9–3.11 recommended. I used Python3.11
+Python 3.9–3.11 recommended. This project was developed using Python 3.11.
 
 ```
 python3.x -m venv .millhand-venv
@@ -41,35 +40,37 @@ pip install ultralytics
 
 Optional but helpful: `pip install opencv-python tqdm numpy`.
 
-## Train (YOLO11)
+## CLI Usage
+
+### Train (YOLO11)
 
 ```
-python main.py --train --epochs 50 --img 640 --batch 16 --model yolo11n.pt
+python main.py --train --epochs 50 --img 640 --batch 16 --model yolo_models/yolo11s.pt
 ```
 
-Artifacts go to `build/yolo11-hand/`. Best weights: `build/yolo11-hand/weights/best.pt`.
+Artifacts go to `output/yolo11_hand/`. Best weights: `output/yolo11_hand/weights/best.pt`.
 
-## Validate
-
-```
-python main.py --val --model build/yolo11-hand/weights/best.pt
-```
-
-## Predict
+### Validate
 
 ```
-python main.py --predict path/to/image_or_dir_or_video.mp4 --model build/yolo11-hand/weights/best.pt --img 640
+python main.py --val --model output/yolo11_hand/weights/best.pt
 ```
 
-## Export to ONNX for OpenCV DNN (YOLO11)
+### Predict
+
+```
+python main.py --predict path/to/image_or_dir_or_video.mp4 --model output/yolo11_hand/weights/best.pt --img 640
+```
+
+### Export to ONNX for OpenCV DNN (YOLO11)
 
 Recommended defaults for OpenCV DNN: opset 12 or 13, static input size, FP32.
 
 ```
-python main.py --export --img 640 --opset 12 --model build/yolo11-hand/weights/best.pt
+python main.py --export --img 640 --opset 12 --model output/yolo11_hand/weights/best.pt
 ```
 
-This will export from `build/yolo11-hand/weights/best.pt` if present, otherwise from `yolo11n.pt`. Output is typically `best.onnx` in the same folder as the weights.
+This will export from `output/yolo11_hand/weights/best.pt` if present, otherwise from `yolo_models/yolo11s.pt`. Output is typically `best.onnx` in the same folder as the weights.
 
 Notes:
 - Keep `--dynamic` off for static shapes; OpenCV handles static best.
@@ -78,7 +79,7 @@ Notes:
 
 ### Using the ONNX in OpenCV (C++)
 
-Ultralytics YOLOv8 ONNX exports commonly output detections as `[num, 84]` for COCO; for a single class, expect `[num, 6]` or `[num, 7]` depending on export version: `[x, y, w, h, conf, class_conf (optional), class_id (optional)]`. If the model exports in the newer format, you may get a 1xN x(5+C) tensor. Inspect the model output once to confirm.
+Ultralytics YOLOv11 ONNX exports commonly output detections as `[1, 5, N]` for single-class models: `[x, y, w, h, conf]`. Inspect the model output once to confirm.
 
 Sketch:
 
@@ -94,67 +95,23 @@ cv::Mat blob = cv::dnn::blobFromImage(img, 1/255.0, cv::Size(input, input), cv::
 net.setInput(blob);
 
 // Forward
-cv::Mat out = net.forward(); // shape varies; e.g., [1, N, 6]
+cv::Mat out = net.forward(); // shape: [1, 5, N]
 
-// Postprocess (example for [x, y, w, h, conf, class])
-std::vector<int> classIds;
-std::vector<float> confidences;
+// Postprocess (example for [x, y, w, h, conf])
 std::vector<cv::Rect> boxes;
-float confThreshold = 0.25f, nmsThreshold = 0.45f;
-
-for (int i = 0; i < out.size[1]; ++i) {
-	float* data = out.ptr<float>(0, i);
-	float x = data[0];
-	float y = data[1];
-	float w = data[2];
-	float h = data[3];
-	float conf = data[4];
-	if (conf < confThreshold) continue;
-	int cls = 0; // single class
-
-	// Convert xywh (center) to xyxy in original image scale
-	int cx = static_cast<int>(x * img.cols);
-	int cy = static_cast<int>(y * img.rows);
-	int bw = static_cast<int>(w * img.cols);
-	int bh = static_cast<int>(h * img.rows);
-	int left = cx - bw / 2;
-	int top = cy - bh / 2;
-
-	classIds.push_back(cls);
-	confidences.push_back(conf);
-	boxes.emplace_back(left, top, bw, bh);
+std::vector<float> confidences;
+for (int i = 0; i < out.size[2]; ++i) {
+    float* data = out.ptr<float>(0, 0, i);
+    float conf = data[4];
+    if (conf > 0.3) { // confidence threshold
+        float x = data[0];
+        float y = data[1];
+        float w = data[2];
+        float h = data[3];
+        boxes.emplace_back(cv::Rect(x - w/2, y - h/2, w, h));
+        confidences.push_back(conf);
+    }
 }
-
-// NMS
-std::vector<int> indices;
-cv::dnn::NMSBoxes(boxes, confidences, confThreshold, nmsThreshold, indices);
-for (int idx : indices) {
-	cv::rectangle(img, boxes[idx], cv::Scalar(0, 255, 0), 2);
-}
-
-cv::imwrite("result.jpg", img);
 ```
 
-If your export yields a different output layout (e.g., a 84-dim row per box with per-class confidences), adjust indices accordingly. You can quickly print the output shape using a short Python script with `onnxruntime` to confirm.
-
-## Converting annotations to YOLO
-
-If your source dataset is in Pascal VOC (XML) or COCO (JSON), use tools like:
-
-- Roboflow export to YOLO
-- CVAT export to YOLO
-- Python converters (e.g., fiftyone or custom scripts)
-
-Checklist for correct YOLO labels:
-
-- One `*.txt` per image in `labels/...`.
-- Only one class: `0` (hand).
-- Boxes normalized by image width/height.
-- Train/val splits balanced across scenes, lighting, skin tones, gloves, occlusions.
-
-## Tips
-
-- Start with `yolo11n.pt` for speed; switch to `yolo11s.pt`/`m.pt` if accuracy lags.
-- Increase epochs to 100–300 once the pipeline works.
-- Use mosaic/augmentations (Ultralytics enables sensible defaults).
-- If hands are small, try `--img 896` or `--img 1024` and smaller strides (larger models) for better small-object recall.
+This README provides a complete overview of the dataset, CLI, and deployment workflow.
