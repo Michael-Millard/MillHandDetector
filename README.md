@@ -1,10 +1,16 @@
 # MillHandDetector
 
-Train an Ultralytics YOLO11-based hand detector in Python.
+Train an Ultralytics YOLO11-based hand detector in Python. Trained locally on my RTX4060. I used the nano and small YOLO models. The ONNX exports are used later in my C++ hand detection application. See: https://github.com/Michael-Millard/HandDetectorCPP
+
+<div style="display: flex; gap: 10px;">
+	<img src="media/test1.jpg" alt="Test Image 1" width="220"/>
+	<img src="media/test2.jpg" alt="Test Image 2" width="220"/>
+	<img src="media/test3.jpg" alt="Test Image 3" width="220"/>
+</div>
 
 ## Dataset
 
-This project uses the "Hand Detection Dataset (VOC/YOLO Format)" by Nouman Ahsan, available on Kaggle: [Hand Detection Dataset](https://www.kaggle.com/datasets/nomihsa965/hand-detection-dataset-vocyolo-format?resource=download). The dataset contains labeled images for training and validation in YOLO format.
+This project uses the "Hand Detection Dataset (VOC/YOLO Format)" by Nouman Ahsan, available on Kaggle: [Hand Detection Dataset](https://www.kaggle.com/datasets/nomihsa965/hand-detection-dataset-vocyolo-format?resource=download). The dataset contains labeled images for training, validation, and testing in YOLO format. The format of the data was modified to match the expected YOLO dataset structure.
 
 ## Repository Layout
 
@@ -15,12 +21,15 @@ This project uses the "Hand Detection Dataset (VOC/YOLO Format)" by Nouman Ahsan
 ├── config/
 │   └── hand.yaml             # dataset config (points to ./data)
 └── data/
-     ├── images/
-     │   ├── train/
-     │   └── val/
-     └── labels/
-          ├── train/
-          └── val/
+     ├── train/
+     │   ├── images/
+     │   └── labels/
+     ├── val/
+     │   ├── images/
+     │   └── labels/
+     └── test/
+         ├── images/
+         └── labels/
 ```
 
 Each image must have a same-named `*.txt` label file in `labels/...` with YOLO format lines:
@@ -76,42 +85,3 @@ Notes:
 - Keep `--dynamic` off for static shapes; OpenCV handles static best.
 - Keep `--half` off (FP32) unless your OpenCV build supports FP16.
 - You can try `--simplify` if you have `onnxsim` installed.
-
-### Using the ONNX in OpenCV (C++)
-
-Ultralytics YOLOv11 ONNX exports commonly output detections as `[1, 5, N]` for single-class models: `[x, y, w, h, conf]`. Inspect the model output once to confirm.
-
-Sketch:
-
-```cpp
-#include <opencv2/opencv.hpp>
-
-cv::dnn::Net net = cv::dnn::readNetFromONNX("best.onnx");
-
-// Preprocess
-cv::Mat img = cv::imread("image.jpg");
-int input = 640; // must match export imgsz if static
-cv::Mat blob = cv::dnn::blobFromImage(img, 1/255.0, cv::Size(input, input), cv::Scalar(), true, false);
-net.setInput(blob);
-
-// Forward
-cv::Mat out = net.forward(); // shape: [1, 5, N]
-
-// Postprocess (example for [x, y, w, h, conf])
-std::vector<cv::Rect> boxes;
-std::vector<float> confidences;
-for (int i = 0; i < out.size[2]; ++i) {
-    float* data = out.ptr<float>(0, 0, i);
-    float conf = data[4];
-    if (conf > 0.3) { // confidence threshold
-        float x = data[0];
-        float y = data[1];
-        float w = data[2];
-        float h = data[3];
-        boxes.emplace_back(cv::Rect(x - w/2, y - h/2, w, h));
-        confidences.push_back(conf);
-    }
-}
-```
-
-This README provides a complete overview of the dataset, CLI, and deployment workflow.
