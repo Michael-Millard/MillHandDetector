@@ -1,6 +1,6 @@
-# MillHandDetector
+# HandDetector
 
-Train an Ultralytics YOLO11-based hand detector in Python. Trained locally on my RTX4060. I used the nano and small YOLO models. The ONNX exports are used later in my C++ hand detection application. See: https://github.com/Michael-Millard/HandDetectorCPP
+Train an Ultralytics YOLO11-based hand detector in Python. Trained locally on my RTX4060. I used the nano and small YOLO models. The ONNX exports are used later in my C++ hand detection application. See: [CPP Hand Detector](https://github.com/Michael-Millard/HandDetectorCPP). It's also used in my SpinningGlobeAR app: [SpinningGlobeAR](https://github.com/Michael-Millard/SpinningEarthAR).
 
 <div style="display: flex; gap: 10px;">
 	<img src="media/test1.jpg" alt="Test Image 1" width="260"/>
@@ -10,7 +10,7 @@ Train an Ultralytics YOLO11-based hand detector in Python. Trained locally on my
 
 ## Dataset
 
-This project uses the "Hand Detection Dataset (VOC/YOLO Format)" by Nouman Ahsan, available on Kaggle: [Hand Detection Dataset](https://www.kaggle.com/datasets/nomihsa965/hand-detection-dataset-vocyolo-format?resource=download). The dataset contains labeled images for training, validation, and testing in YOLO format. The format of the data was modified to match the expected YOLO dataset structure.
+This project uses the "Hand Detection Dataset (VOC/YOLO Format)" by Nouman Ahsan, available on Kaggle: [Hand Detection Dataset](https://www.kaggle.com/datasets/nomihsa965/hand-detection-dataset-vocyolo-format?resource=download). The dataset contains labeled images for training, validation, and testing in YOLO format. A big thanks to Nouman for creating the dataset! The format of the data was modified to match the expected YOLO dataset structure.
 
 ## Repository Layout
 
