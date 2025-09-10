@@ -1,6 +1,6 @@
 # HandDetector
 
-Train an Ultralytics YOLO11-based hand detector in Python. Trained locally on my RTX4060. I used the nano and small YOLO models. The ONNX exports are used later in my C++ hand detection application. See: [CPP Hand Detector](https://github.com/Michael-Millard/HandDetectorCPP). It's also used in my SpinningGlobeAR app: [SpinningGlobeAR](https://github.com/Michael-Millard/SpinningEarthAR).
+This repo trains an Ultralytics YOLO11-based hand detector in Python. Trained locally on my RTX4060. I used the nano and small YOLO models as I plan on using them for real-time hand detection applications. The ONNX exports are used later in my C++ hand detection application. See: [CPP Hand Detector](https://github.com/Michael-Millard/HandDetectorCPP). It's also used in my SpinningGlobeAR app: [SpinningGlobeAR](https://github.com/Michael-Millard/SpinningEarthAR).
 
 <div style="display: flex; gap: 10px;">
 	<img src="media/test1.jpg" alt="Test Image 1" width="260"/>
